@@ -1,0 +1,27 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: jeton-ingress
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: api.jetoncargo.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: jeton-api
+                port:
+                  number: 80
+    - host: app.jetoncargo.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: jeton-web
+                port:
+                  number: 80

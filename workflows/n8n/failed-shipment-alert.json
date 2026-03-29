@@ -1,0 +1,33 @@
+{
+  "name": "Failed Shipment Alert",
+  "nodes": [
+    {
+      "parameters": {
+        "path": "shipment-failed",
+        "httpMethod": "POST",
+        "responseMode": "onReceived"
+      },
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [220, 250]
+    },
+    {
+      "parameters": {
+        "fromEmail": "ops@jetoncargo.com",
+        "toEmail": "admin@jetoncargo.com",
+        "subject": "Shipment Failure Alert",
+        "text": "Shipment {{$json.body.trackingNumber}} failed at {{$json.body.location}}"
+      },
+      "name": "Alert Admin",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2,
+      "position": [480, 250]
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [[{ "node": "Alert Admin", "type": "main", "index": 0 }]]
+    }
+  }
+}

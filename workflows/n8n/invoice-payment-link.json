@@ -1,0 +1,45 @@
+{
+  "name": "Invoice Payment Link",
+  "nodes": [
+    {
+      "parameters": {
+        "path": "invoice-created",
+        "httpMethod": "POST",
+        "responseMode": "onReceived"
+      },
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [220, 240]
+    },
+    {
+      "parameters": {
+        "functionCode": "const invoiceId = $json.body.invoiceId; const customerEmail = $json.body.customerEmail; return [{json: {customerEmail, paymentLink: `https://pay.jetoncargo.com/invoice/${invoiceId}`}}];"
+      },
+      "name": "Build Payment Link",
+      "type": "n8n-nodes-base.function",
+      "typeVersion": 1,
+      "position": [460, 240]
+    },
+    {
+      "parameters": {
+        "fromEmail": "billing@jetoncargo.com",
+        "toEmail": "={{$json.customerEmail}}",
+        "subject": "Invoice Payment Link",
+        "text": "Please complete payment: {{$json.paymentLink}}"
+      },
+      "name": "Send Payment Link",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2,
+      "position": [700, 240]
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [[{ "node": "Build Payment Link", "type": "main", "index": 0 }]]
+    },
+    "Build Payment Link": {
+      "main": [[{ "node": "Send Payment Link", "type": "main", "index": 0 }]]
+    }
+  }
+}

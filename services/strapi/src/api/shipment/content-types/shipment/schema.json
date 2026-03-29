@@ -1,0 +1,44 @@
+{
+  "kind": "collectionType",
+  "collectionName": "cms_shipments",
+  "info": {
+    "singularName": "shipment",
+    "pluralName": "shipments",
+    "displayName": "Shipment"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "attributes": {
+    "shipmentId": {
+      "type": "string",
+      "required": true
+    },
+    "trackingNumber": {
+      "type": "string",
+      "required": true,
+      "unique": true
+    },
+    "origin": {
+      "type": "string",
+      "required": true
+    },
+    "destination": {
+      "type": "string",
+      "required": true
+    },
+    "status": {
+      "type": "enumeration",
+      "enum": ["pending", "booked", "in_transit", "delivered", "failed"],
+      "required": true
+    },
+    "weight": {
+      "type": "decimal",
+      "required": true
+    },
+    "volume": {
+      "type": "decimal",
+      "required": true
+    }
+  }
+}

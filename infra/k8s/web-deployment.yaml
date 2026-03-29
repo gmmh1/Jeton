@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: jeton-web
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: jeton-web
+  template:
+    metadata:
+      labels:
+        app: jeton-web
+    spec:
+      containers:
+        - name: web
+          image: ghcr.io/jeton-cargo/web:latest
+          ports:
+            - containerPort: 3001
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: jeton-web
+spec:
+  selector:
+    app: jeton-web
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 3001

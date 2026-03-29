@@ -1,0 +1,57 @@
+name: Deploy AWS
+
+on:
+  workflow_dispatch:
+  push:
+    branches: ["main"]
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      AWS_REGION: ${{ secrets.AWS_REGION }}
+      AWS_ECR_REGISTRY: ${{ secrets.AWS_ECR_REGISTRY }}
+      AWS_EKS_CLUSTER: ${{ secrets.AWS_EKS_CLUSTER }}
+      AWS_K8S_NAMESPACE: ${{ secrets.AWS_K8S_NAMESPACE }}
+      IMAGE_TAG: ${{ github.sha }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure AWS Credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to ECR
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build and Push API Image
+        run: |
+          docker build -t $AWS_ECR_REGISTRY/jeton-api:$IMAGE_TAG ./services/api
+          docker push $AWS_ECR_REGISTRY/jeton-api:$IMAGE_TAG
+
+      - name: Build and Push Web Image
+        run: |
+          docker build -t $AWS_ECR_REGISTRY/jeton-web:$IMAGE_TAG ./apps/web
+          docker push $AWS_ECR_REGISTRY/jeton-web:$IMAGE_TAG
+
+      - name: Configure kubectl for EKS
+        run: aws eks update-kubeconfig --name $AWS_EKS_CLUSTER --region $AWS_REGION
+
+      - name: Deploy Kubernetes Manifests
+        run: |
+          sed "s#ghcr.io/jeton-cargo/api:latest#$AWS_ECR_REGISTRY/jeton-api:$IMAGE_TAG#g" infra/k8s/api-deployment.yaml > /tmp/api-deployment.yaml
+          sed "s#ghcr.io/jeton-cargo/web:latest#$AWS_ECR_REGISTRY/jeton-web:$IMAGE_TAG#g" infra/k8s/web-deployment.yaml > /tmp/web-deployment.yaml
+
+          kubectl apply -n $AWS_K8S_NAMESPACE -f /tmp/api-deployment.yaml
+          kubectl apply -n $AWS_K8S_NAMESPACE -f /tmp/web-deployment.yaml
+          kubectl apply -n $AWS_K8S_NAMESPACE -f infra/k8s/ingress.yaml
+
+          kubectl rollout status deployment/jeton-api -n $AWS_K8S_NAMESPACE --timeout=180s
+          kubectl rollout status deployment/jeton-web -n $AWS_K8S_NAMESPACE --timeout=180s

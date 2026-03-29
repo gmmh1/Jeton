@@ -1,0 +1,44 @@
+{
+  "name": "QR Lookup",
+  "nodes": [
+    {
+      "parameters": {
+        "path": "scan",
+        "httpMethod": "GET",
+        "responseMode": "responseNode"
+      },
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [220, 260]
+    },
+    {
+      "parameters": {
+        "url": "=http://api:3000/scan/{{$json.query.code}}",
+        "method": "GET"
+      },
+      "name": "Find Shipment",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 1,
+      "position": [460, 260]
+    },
+    {
+      "parameters": {
+        "responseBody": "={{$json}}",
+        "responseCode": 200
+      },
+      "name": "Return Response",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1,
+      "position": [700, 260]
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [[{ "node": "Find Shipment", "type": "main", "index": 0 }]]
+    },
+    "Find Shipment": {
+      "main": [[{ "node": "Return Response", "type": "main", "index": 0 }]]
+    }
+  }
+}

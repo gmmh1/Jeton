@@ -1,0 +1,33 @@
+{
+  "kind": "collectionType",
+  "collectionName": "cms_tracking_events",
+  "info": {
+    "singularName": "tracking-event",
+    "pluralName": "tracking-events",
+    "displayName": "Tracking Event"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "attributes": {
+    "shipmentId": {
+      "type": "string"
+    },
+    "trackingNumber": {
+      "type": "string",
+      "required": true
+    },
+    "status": {
+      "type": "enumeration",
+      "enum": ["pending", "booked", "in_transit", "delivered", "failed"],
+      "required": true
+    },
+    "location": {
+      "type": "string",
+      "required": true
+    },
+    "eventTimestamp": {
+      "type": "datetime"
+    }
+  }
+}

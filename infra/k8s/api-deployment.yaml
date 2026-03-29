@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: jeton-api
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: jeton-api
+  template:
+    metadata:
+      labels:
+        app: jeton-api
+    spec:
+      containers:
+        - name: api
+          image: ghcr.io/jeton-cargo/api:latest
+          ports:
+            - containerPort: 3000
+          env:
+            - name: API_PORT
+              value: "3000"
+            - name: DATABASE_URL
+              valueFrom:
+                secretKeyRef:
+                  name: jeton-secrets
+                  key: database-url
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: jeton-api
+spec:
+  selector:
+    app: jeton-api
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 3000

@@ -1,0 +1,33 @@
+{
+  "name": "Customer Support Assistant",
+  "nodes": [
+    {
+      "parameters": {
+        "path": "customer-support",
+        "httpMethod": "POST",
+        "responseMode": "onReceived"
+      },
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [220, 240]
+    },
+    {
+      "parameters": {
+        "fromEmail": "support@jetoncargo.com",
+        "toEmail": "={{$json.body.customerEmail}}",
+        "subject": "Jeton Support Response",
+        "text": "={{$json.body.answer}}"
+      },
+      "name": "Send Customer Reply",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2,
+      "position": [470, 240]
+    }
+  ],
+  "connections": {
+    "Webhook": {
+      "main": [[{ "node": "Send Customer Reply", "type": "main", "index": 0 }]]
+    }
+  }
+}

@@ -1,0 +1,45 @@
+{
+  "kind": "collectionType",
+  "collectionName": "cms_bookings",
+  "info": {
+    "singularName": "booking",
+    "pluralName": "bookings",
+    "displayName": "Booking"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "attributes": {
+    "bookingId": {
+      "type": "string",
+      "required": true,
+      "unique": true
+    },
+    "shipmentId": {
+      "type": "string",
+      "required": true
+    },
+    "trackingNumber": {
+      "type": "string"
+    },
+    "email": {
+      "type": "email",
+      "required": true
+    },
+    "airline": {
+      "type": "string"
+    },
+    "status": {
+      "type": "enumeration",
+      "enum": ["pending", "confirmed", "cancelled"],
+      "required": true
+    },
+    "shipmentStatus": {
+      "type": "enumeration",
+      "enum": ["pending", "booked", "in_transit", "delivered", "failed"]
+    },
+    "createdAtSource": {
+      "type": "datetime"
+    }
+  }
+}

@@ -1,0 +1,134 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: jeton-postgres
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - "${POSTGRES_PORT}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./db/schema.sql:/docker-entrypoint-initdb.d/001-schema.sql:ro
+
+  redis:
+    image: redis:7-alpine
+    container_name: jeton-redis
+    ports:
+      - "${REDIS_PORT}:6379"
+
+  n8n:
+    image: n8nio/n8n:latest
+    container_name: jeton-n8n
+    environment:
+      N8N_BASIC_AUTH_ACTIVE: ${N8N_BASIC_AUTH_ACTIVE}
+      N8N_BASIC_AUTH_USER: ${N8N_BASIC_AUTH_USER}
+      N8N_BASIC_AUTH_PASSWORD: ${N8N_BASIC_AUTH_PASSWORD}
+      DB_TYPE: postgresdb
+      DB_POSTGRESDB_HOST: postgres
+      DB_POSTGRESDB_PORT: 5432
+      DB_POSTGRESDB_DATABASE: ${POSTGRES_DB}
+      DB_POSTGRESDB_USER: ${POSTGRES_USER}
+      DB_POSTGRESDB_PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - "${N8N_PORT}:5678"
+    depends_on:
+      - postgres
+
+  directus:
+    image: directus/directus:latest
+    container_name: jeton-directus
+    environment:
+      KEY: replace-me
+      SECRET: replace-me-too
+      DB_CLIENT: pg
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_DATABASE: ${POSTGRES_DB}
+      DB_USER: ${POSTGRES_USER}
+      DB_PASSWORD: ${POSTGRES_PASSWORD}
+      ADMIN_EMAIL: admin@jetoncargo.com
+      ADMIN_PASSWORD: admin123
+    ports:
+      - "${DIRECTUS_PORT}:8055"
+    depends_on:
+      - postgres
+
+  strapi:
+    build:
+      context: ./services/strapi
+      dockerfile: Dockerfile
+    container_name: jeton-strapi
+    environment:
+      DATABASE_CLIENT: postgres
+      DATABASE_HOST: postgres
+      DATABASE_PORT: 5432
+      DATABASE_NAME: ${POSTGRES_DB}
+      DATABASE_USERNAME: ${POSTGRES_USER}
+      DATABASE_PASSWORD: ${POSTGRES_PASSWORD}
+      APP_KEYS: ${STRAPI_APP_KEYS}
+      API_TOKEN_SALT: ${STRAPI_API_TOKEN_SALT}
+      ADMIN_JWT_SECRET: ${STRAPI_ADMIN_JWT_SECRET}
+      TRANSFER_TOKEN_SALT: ${STRAPI_TRANSFER_TOKEN_SALT}
+      JWT_SECRET: ${STRAPI_JWT_SECRET}
+      ADMIN_SECRETS_ENCRYPTION_KEY: ${STRAPI_ADMIN_ENCRYPTION_KEY}
+      HOST: 0.0.0.0
+      PORT: 1337
+      NODE_ENV: development
+    ports:
+      - "${STRAPI_PORT}:1337"
+    volumes:
+      - strapi_data:/opt/strapi/public/uploads
+    depends_on:
+      - postgres
+
+  odoo:
+    image: odoo:17
+    container_name: jeton-odoo
+    environment:
+      HOST: postgres
+      USER: ${POSTGRES_USER}
+      PASSWORD: ${POSTGRES_PASSWORD}
+    ports:
+      - "${ODOO_PORT}:8069"
+    depends_on:
+      - postgres
+
+  api:
+    build:
+      context: ./services/api
+      dockerfile: Dockerfile
+    container_name: jeton-api
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+      REDIS_URL: ${REDIS_URL}
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_EXPIRES_IN: ${JWT_EXPIRES_IN}
+      SUPERUSER_EMAIL: ${SUPERUSER_EMAIL}
+      SUPERUSER_PASSWORD_HASH: ${SUPERUSER_PASSWORD_HASH}
+      SUPERUSER_ROLE: ${SUPERUSER_ROLE}
+      API_PORT: ${API_PORT}
+      API_CORS_ORIGINS: ${API_CORS_ORIGINS}
+      THROTTLE_TTL: ${THROTTLE_TTL}
+      THROTTLE_LIMIT: ${THROTTLE_LIMIT}
+      STRIPE_SECRET_KEY: ${STRIPE_SECRET_KEY}
+      STRIPE_WEBHOOK_SECRET: ${STRIPE_WEBHOOK_SECRET}
+      STRIPE_CURRENCY: ${STRIPE_CURRENCY}
+      TWILIO_ACCOUNT_SID: ${TWILIO_ACCOUNT_SID}
+      TWILIO_AUTH_TOKEN: ${TWILIO_AUTH_TOKEN}
+      TWILIO_WHATSAPP_NUMBER: ${TWILIO_WHATSAPP_NUMBER}
+      SUPPORT_DEFAULT_CHANNEL: ${SUPPORT_DEFAULT_CHANNEL}
+      N8N_WEBHOOK_BASE_URL: ${N8N_WEBHOOK_BASE_URL}
+      STRAPI_INTERNAL_URL: ${STRAPI_INTERNAL_URL}
+      STRAPI_INGEST_BASE_PATH: ${STRAPI_INGEST_BASE_PATH}
+      STRAPI_API_TOKEN: ${STRAPI_API_TOKEN}
+    ports:
+      - "${API_PORT}:3000"
+    depends_on:
+      - postgres
+      - redis
+
+volumes:
+  postgres_data:
+  strapi_data:
