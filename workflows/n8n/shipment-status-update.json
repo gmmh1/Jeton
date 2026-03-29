@@ -11,38 +11,7 @@
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 1,
       "position": [220, 260]
-    },
-    {
-      "parameters": {
-        "url": "http://api:3000/tracking/events",
-        "method": "POST",
-        "jsonParameters": true,
-        "bodyParametersJson": "={{$json.body}}"
-      },
-      "name": "Persist Event",
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 1,
-      "position": [460, 260]
-    },
-    {
-      "parameters": {
-        "fromEmail": "ops@jetoncargo.com",
-        "toEmail": "={{$json.body.customerEmail}}",
-        "subject": "Shipment Status Updated",
-        "text": "Shipment {{$json.body.trackingNumber}} is now {{$json.body.status}}"
-      },
-      "name": "Notify Customer",
-      "type": "n8n-nodes-base.emailSend",
-      "typeVersion": 2,
-      "position": [700, 260]
     }
   ],
-  "connections": {
-    "Webhook": {
-      "main": [[{ "node": "Persist Event", "type": "main", "index": 0 }]]
-    },
-    "Persist Event": {
-      "main": [[{ "node": "Notify Customer", "type": "main", "index": 0 }]]
-    }
-  }
+  "connections": {}
 }
