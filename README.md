@@ -65,6 +65,15 @@ npm install
 npm run start
 ```
 
+Mobile environment setup (`apps/mobile/.env`):
+
+```text
+EXPO_PUBLIC_API_BASE_URL=http://<your-lan-ip>:3000/api
+EXPO_PUBLIC_REALTIME_POLL_MS=5000
+```
+
+Note: For physical phones, never use `localhost`; use the host machine LAN IP.
+
 ## MVP Event Flow
 
 1. User books shipment from web/mobile.
@@ -81,6 +90,11 @@ npm run start
 3. Finalize Odoo integration credentials.
 4. Enable object storage for shipping documents.
 5. Add Sentry and dashboards for operational visibility.
+
+## AWS Deployment Guide
+
+- AWS + GitHub deployment runbook: [docs/aws-deployment-guide.md](docs/aws-deployment-guide.md)
+- Operational deployment sequence: [docs/deployment-runbook.md](docs/deployment-runbook.md)
 
 ## Security Layers Implemented
 
